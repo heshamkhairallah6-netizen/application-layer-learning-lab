@@ -117,12 +117,19 @@ export default function SimulationShell({
       </div>
 
       <div className="sim__stage">
+        <div className="sim__caption">
+          <span className="sim__caption-dot" aria-hidden />
+          <span>
+            Step {String(safeIndex + 1).padStart(2, '0')} of {String(steps.length).padStart(2, '0')}
+          </span>
+          <span aria-hidden>·</span>
+          <span>{caption ?? step?.phase}</span>
+        </div>
         <FlowCanvas
           nodes={nodes}
           activeNode={step?.node ?? 0}
           packetLabel={step?.packetLabel}
           speed={speed}
-          caption={caption ?? `Step ${safeIndex + 1} of ${steps.length} · ${step?.phase ?? ''}`}
         />
         {stageFooter}
       </div>
@@ -165,10 +172,6 @@ export default function SimulationShell({
 
         <div className="spacer" />
 
-        <span className="mono dim" style={{ fontSize: 10.5 }}>
-          STEP {String(safeIndex + 1).padStart(2, '0')} / {String(steps.length).padStart(2, '0')}
-        </span>
-
         <label className="sim__speed">
           SPEED
           <select className="select" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} aria-label="Animation speed">
@@ -207,7 +210,7 @@ export default function SimulationShell({
 
         <div className="sim__detail" aria-live="polite">
           <div className="sim__detail-head">
-            <span className="mono dim" style={{ fontSize: 10.5 }}>
+            <span className="mono dim" style={{ fontSize: 12 }}>
               {String(safeIndex + 1).padStart(2, '0')}
             </span>
             <span className="sim__detail-title">{step?.title}</span>
@@ -229,6 +232,12 @@ export default function SimulationShell({
               <pre>{step.raw}</pre>
             </div>
           ) : null}
+          <div className="sim__hint">
+            <span className="sim__hint-label">Tip</span>
+            <span>
+              Click any component in the diagram to see what it does in this exchange. Use the arrows to move one step at a time.
+            </span>
+          </div>
           {!reduce && finished ? (
             <div className="callout callout--ok">
               <span>
@@ -241,11 +250,11 @@ export default function SimulationShell({
 
       <div className="sim__legend">
         <span>
-          <span className="dot dot--ok" style={{ display: 'inline-block', marginRight: 6 }} />
+          <span className="dot dot--ok" style={{ display: 'inline-block', marginRight: 8 }} />
           completed
         </span>
         <span>
-          <span className="dot dot--live" style={{ display: 'inline-block', marginRight: 6 }} />
+          <span className="dot dot--live" style={{ display: 'inline-block', marginRight: 8 }} />
           active hop
         </span>
         <span className="faint">click any component for its role</span>

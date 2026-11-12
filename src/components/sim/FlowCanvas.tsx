@@ -12,24 +12,24 @@ export type FlowNode = {
 };
 
 const W = 1000;
-const H = 274;
-const BOX_W = 150;
-const BOX_H = 78;
-const TOP = 146;
-const PAD = 92;
+const H = 300;
+const BOX_W = 164;
+const BOX_H = 96;
+const TOP = 150;
+const PAD = 86;
 
 const KIND_STROKE: Record<NonNullable<FlowNode['kind']>, string> = {
-  client: '#5e97bd',
-  server: '#58a8a1',
-  service: '#7d8b9b',
-  network: '#5a6776',
+  client: '#6ba4c8',
+  server: '#62b3aa',
+  service: '#8d9aa8',
+  network: '#5f6c7b',
 };
 
 const KIND_FILL: Record<NonNullable<FlowNode['kind']>, string> = {
-  client: 'rgba(71,123,158,0.16)',
-  server: 'rgba(67,143,137,0.16)',
-  service: 'rgba(255,255,255,0.035)',
-  network: 'rgba(255,255,255,0.02)',
+  client: 'rgba(71,123,158,0.18)',
+  server: 'rgba(67,143,137,0.18)',
+  service: 'rgba(255,255,255,0.04)',
+  network: 'rgba(255,255,255,0.025)',
 };
 
 function nodeX(index: number, total: number) {
@@ -53,7 +53,7 @@ export default function FlowCanvas({ nodes, activeNode, packetLabel, caption, sp
   const active = Math.max(0, Math.min(activeNode, total - 1));
   const activeLink = Math.max(0, active - 1);
   const px = nodeX(active, total);
-  const packetY = TOP - 42;
+  const packetY = TOP - 48;
   const duration = reduce ? 0 : Math.min(1.1, 0.72 / Math.max(speed, 0.5));
 
   const selectedNode = useMemo(() => (selected === null ? null : nodes[selected]), [selected, nodes]);
@@ -69,203 +69,206 @@ export default function FlowCanvas({ nodes, activeNode, packetLabel, caption, sp
 
   return (
     <div>
-      <svg
-        className="flow"
-        viewBox={`0 0 ${W} ${H}`}
-        role="img"
-        aria-label={`Network flow diagram with ${total} components. Active component: ${nodes[active]?.label ?? 'none'}`}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <defs>
-          <marker id="flow-arrow" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
-            <path d="M0 0 6 3 0 6z" fill="#6b7887" />
-          </marker>
-          <marker id="flow-arrow-done" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
-            <path d="M0 0 6 3 0 6z" fill="#438f89" />
-          </marker>
-          <linearGradient id="flow-packet" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#8ec4e0" />
-            <stop offset="100%" stopColor="#477b9e" />
-          </linearGradient>
-        </defs>
+      <div className="sim__stage-scroll">
+        <svg
+          className="flow"
+          viewBox={`0 0 ${W} ${H}`}
+          role="img"
+          aria-label={`Network flow diagram with ${total} components. Active component: ${nodes[active]?.label ?? 'none'}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <defs>
+            <marker id="flow-arrow" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
+              <path d="M0 0 6 3 0 6z" fill="#6b7887" />
+            </marker>
+            <marker id="flow-arrow-done" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
+              <path d="M0 0 6 3 0 6z" fill="#62b3aa" />
+            </marker>
+            <linearGradient id="flow-packet" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#a9cde4" />
+              <stop offset="100%" stopColor="#477b9e" />
+            </linearGradient>
+          </defs>
 
-        {caption ? (
-          <text x="24" y="26" fill="#7f8b99" fontSize="10" letterSpacing="1.6">
-            {caption.toUpperCase()}
-          </text>
-        ) : null}
+          {caption ? (
+            <text x="26" y="30" fill="#8b97a4" fontSize="12" letterSpacing="1.4" fontFamily="var(--mono)">
+              {caption.toUpperCase()}
+            </text>
+          ) : null}
 
-        {nodes.slice(0, -1).map((node, i) => {
-          const x1 = nodeX(i, total) + BOX_W / 2 + 3;
-          const x2 = nodeX(i + 1, total) - BOX_W / 2 - 6;
-          const isDone = i < activeLink;
-          const isActive = i === activeLink;
-          return (
-            <g key={`wire-${node.id}`}>
-              <line
-                x1={x1}
-                y1={TOP + BOX_H / 2}
-                x2={x2}
-                y2={TOP + BOX_H / 2}
-                stroke={isDone ? '#3d6f6a' : isActive ? '#5e97bd' : '#414d5b'}
-                strokeWidth={isActive ? 1.8 : 1.2}
-                strokeDasharray={isActive ? '5 4' : undefined}
-                markerEnd={isDone ? 'url(#flow-arrow-done)' : 'url(#flow-arrow)'}
-                opacity={isActive || isDone ? 1 : 0.75}
-              >
-                {isActive ? <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1s" repeatCount="indefinite" /> : null}
-              </line>
-              <text
-                x={(x1 + x2) / 2}
-                y={TOP + BOX_H / 2 - 8}
-                fill={isActive ? '#8fb8d2' : '#5c6875'}
-                fontSize="8.5"
-                textAnchor="middle"
-                letterSpacing="0.8"
-              >
-                {isActive ? 'IN TRANSIT' : ''}
-              </text>
-            </g>
-          );
-        })}
-
-        {nodes.map((node, i) => {
-          const x = nodeX(i, total);
-          const isActive = i === active;
-          const isDone = i < active;
-          const stroke = isActive ? '#7fb2d2' : isDone ? '#3f736e' : KIND_STROKE[node.kind ?? 'service'];
-          const fill = isActive ? 'rgba(71,123,158,0.26)' : KIND_FILL[node.kind ?? 'service'];
-          return (
-            <g
-              key={node.id}
-              className="flow__node"
-              tabIndex={0}
-              role="button"
-              aria-label={`${node.label}. ${node.sub}. Select for details.`}
-              onClick={() => handleSelect(i)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  handleSelect(i);
-                }
-              }}
-            >
-              <rect
-                x={x - BOX_W / 2}
-                y={TOP}
-                width={BOX_W}
-                height={BOX_H}
-                rx="4"
-                fill={fill}
-                stroke={stroke}
-                strokeWidth={isActive ? 1.8 : 1}
-              />
-              <rect x={x - BOX_W / 2} y={TOP} width={BOX_W} height="2.5" rx="1" fill={stroke} opacity={isActive ? 1 : 0.55} />
-              {node.tag ? (
-                <text x={x} y={TOP + 19} fill={isActive ? '#a9cde4' : '#7f8b99'} fontSize="8.5" textAnchor="middle" letterSpacing="1.1">
-                  {node.tag.toUpperCase()}
+          {nodes.slice(0, -1).map((node, i) => {
+            const x1 = nodeX(i, total) + BOX_W / 2 + 4;
+            const x2 = nodeX(i + 1, total) - BOX_W / 2 - 8;
+            const isDone = i < activeLink;
+            const isActive = i === activeLink;
+            return (
+              <g key={`wire-${node.id}`}>
+                <line
+                  x1={x1}
+                  y1={TOP + BOX_H / 2}
+                  x2={x2}
+                  y2={TOP + BOX_H / 2}
+                  stroke={isDone ? '#3f7a74' : isActive ? '#6ba4c8' : '#414d5b'}
+                  strokeWidth={isActive ? 2 : 1.2}
+                  strokeDasharray={isActive ? '6 5' : undefined}
+                  markerEnd={isDone ? 'url(#flow-arrow-done)' : 'url(#flow-arrow)'}
+                  opacity={isActive || isDone ? 1 : 0.7}
+                >
+                  {isActive ? <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1s" repeatCount="indefinite" /> : null}
+                </line>
+                <text
+                  x={(x1 + x2) / 2}
+                  y={TOP + BOX_H / 2 - 12}
+                  fill={isActive ? '#9dc4dc' : '#5c6875'}
+                  fontSize="10"
+                  fontFamily="var(--mono)"
+                  textAnchor="middle"
+                  letterSpacing="1"
+                >
+                  {isActive ? 'IN TRANSIT' : ''}
                 </text>
-              ) : null}
-              <text x={x} y={TOP + 42} fill={isActive ? '#f1f3f5' : '#d5dde5'} fontSize="12" textAnchor="middle" fontWeight="600">
-                {node.label}
-              </text>
-              <text x={x} y={TOP + 58} fill={isActive ? '#b6c9d6' : '#8d99a6'} fontSize="8.8" textAnchor="middle">
-                {node.sub}
-              </text>
-              {node.address ? (
-                <text x={x} y={TOP + 71} fill="#6f7d8c" fontSize="8" textAnchor="middle">
-                  {node.address}
-                </text>
-              ) : null}
-              {isDone ? (
-                <circle cx={x + BOX_W / 2 - 9} cy={TOP + 11} r="4" fill="#438f89" />
-              ) : null}
-              {isDone ? (
-                <path
-                  d={`M${x + BOX_W / 2 - 11} ${TOP + 11} l1.4 1.4 2.6 -2.8`}
-                  stroke="#10161c"
-                  strokeWidth="1.2"
-                  fill="none"
-                  strokeLinecap="round"
+              </g>
+            );
+          })}
+
+          {nodes.map((node, i) => {
+            const x = nodeX(i, total);
+            const isActive = i === active;
+            const isDone = i < active;
+            const isSelected = i === selected;
+            const stroke = isSelected ? '#a9cde4' : isActive ? '#8fc2de' : isDone ? '#4b8b85' : KIND_STROKE[node.kind ?? 'service'];
+            const fill = isActive ? 'rgba(71,123,158,0.3)' : KIND_FILL[node.kind ?? 'service'];
+            return (
+              <g
+                key={node.id}
+                className="flow__node"
+                tabIndex={0}
+                role="button"
+                aria-label={`${node.label}. ${node.sub}. Select for details.`}
+                onClick={() => handleSelect(i)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleSelect(i);
+                  }
+                }}
+              >
+                {isActive && !reduce ? (
+                  <motion.rect
+                    x={x - BOX_W / 2 - 6}
+                    y={TOP - 6}
+                    width={BOX_W + 12}
+                    height={BOX_H + 12}
+                    rx="9"
+                    fill="none"
+                    stroke="#6ba4c8"
+                    strokeWidth="1"
+                    animate={{ opacity: [0.15, 0.55, 0.15] }}
+                    transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                ) : null}
+                <rect
+                  x={x - BOX_W / 2}
+                  y={TOP}
+                  width={BOX_W}
+                  height={BOX_H}
+                  rx="6"
+                  fill={fill}
+                  stroke={stroke}
+                  strokeWidth={isSelected ? 2.2 : isActive ? 1.8 : 1}
                 />
-              ) : null}
-            </g>
-          );
-        })}
+                <rect x={x - BOX_W / 2} y={TOP} width={BOX_W} height="3" rx="1.5" fill={stroke} opacity={isActive || isSelected ? 1 : 0.55} />
+                {node.tag ? (
+                  <text x={x} y={TOP + 24} fill={isActive ? '#b6d8ec' : '#8b97a4'} fontSize="10" fontFamily="var(--mono)" textAnchor="middle" letterSpacing="1.2">
+                    {node.tag.toUpperCase()}
+                  </text>
+                ) : null}
+                <text x={x} y={TOP + 51} fill={isActive ? '#ffffff' : '#e3e9ef'} fontSize="15" textAnchor="middle" fontWeight="600">
+                  {node.label}
+                </text>
+                <text x={x} y={TOP + 70} fill={isActive ? '#c4d7e3' : '#9aa6b3'} fontSize="11" textAnchor="middle">
+                  {node.sub}
+                </text>
+                {node.address ? (
+                  <text x={x} y={TOP + 86} fill="#7d8a98" fontSize="9.5" fontFamily="var(--mono)" textAnchor="middle">
+                    {node.address}
+                  </text>
+                ) : null}
+                {isDone ? <circle cx={x + BOX_W / 2 - 11} cy={TOP + 14} r="5" fill="#438f89" /> : null}
+                {isDone ? (
+                  <path
+                    d={`M${x + BOX_W / 2 - 13.5} ${TOP + 14} l1.7 1.7 3 -3.2`}
+                    stroke="#10161c"
+                    strokeWidth="1.4"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                ) : null}
+              </g>
+            );
+          })}
 
-        {active >= 0 ? (
-          <g pointerEvents="none">
-            <motion.circle
-              animate={{ cx: px, cy: packetY }}
-              initial={false}
-              transition={{ duration, ease: 'easeInOut' }}
-              r="17"
-              fill="rgba(71,123,158,0.16)"
-            />
-            <motion.circle
-              animate={{ cx: px, cy: packetY }}
-              initial={false}
-              transition={{ duration, ease: 'easeInOut' }}
-              r="6.5"
-              fill="url(#flow-packet)"
-              stroke="#a9cde4"
-              strokeWidth="1"
-            />
-            <motion.line
-              animate={{ x1: px, x2: px }}
-              initial={false}
-              transition={{ duration, ease: 'easeInOut' }}
-              y1={packetY + 8}
-              y2={TOP - 4}
-              stroke="#5e97bd"
-              strokeWidth="1"
-              strokeDasharray="3 3"
-              opacity="0.65"
-            />
-            {packetLabel ? (
-              <motion.text
-                animate={{ x: px }}
+          {active >= 0 ? (
+            <g pointerEvents="none">
+              <motion.circle
+                animate={{ cx: px, cy: packetY }}
                 initial={false}
                 transition={{ duration, ease: 'easeInOut' }}
-                y={packetY - 18}
-                fill="#a9cde4"
-                fontSize="9"
-                textAnchor="middle"
-                letterSpacing="0.8"
-              >
-                {packetLabel}
-              </motion.text>
-            ) : null}
-          </g>
-        ) : null}
-      </svg>
+                r="20"
+                fill="rgba(71,123,158,0.16)"
+              />
+              <motion.circle
+                animate={{ cx: px, cy: packetY }}
+                initial={false}
+                transition={{ duration, ease: 'easeInOut' }}
+                r="7.5"
+                fill="url(#flow-packet)"
+                stroke="#bfe0f2"
+                strokeWidth="1"
+              />
+              <motion.line
+                animate={{ x1: px, x2: px }}
+                initial={false}
+                transition={{ duration, ease: 'easeInOut' }}
+                y1={packetY + 9}
+                y2={TOP - 4}
+                stroke="#6ba4c8"
+                strokeWidth="1"
+                strokeDasharray="3 3"
+                opacity="0.6"
+              />
+              {packetLabel ? (
+                <motion.text
+                  animate={{ x: px }}
+                  initial={false}
+                  transition={{ duration, ease: 'easeInOut' }}
+                  y={packetY - 22}
+                  fill="#a9cde4"
+                  fontSize="10.5"
+                  fontFamily="var(--mono)"
+                  textAnchor="middle"
+                  letterSpacing="0.8"
+                >
+                  {packetLabel}
+                </motion.text>
+              ) : null}
+            </g>
+          ) : null}
+        </svg>
+      </div>
 
       {selectedNode ? (
-        <div
-          style={{
-            margin: '0 10px 10px',
-            border: '1px solid rgba(94,151,189,0.4)',
-            background: 'rgba(23,28,36,0.72)',
-            borderRadius: 4,
-            padding: '8px 11px',
-            display: 'flex',
-            gap: 12,
-            flexWrap: 'wrap',
-            alignItems: 'baseline',
-            position: 'relative',
-            zIndex: 2,
-          }}
-        >
-          <span className="mono" style={{ color: '#cfe3ef' }}>
-            {selectedNode.label}
-          </span>
-          <span className="mono dim" style={{ fontSize: 11 }}>
-            {selectedNode.sub}
-            {selectedNode.address ? ` · ${selectedNode.address}` : ''}
-          </span>
-          <span style={{ fontSize: 11.8, color: '#aab4c0', flex: '1 1 260px' }}>{selectedNode.detail ?? 'Component in the Layer 7 path.'}</span>
+        <div className="sim__inspector" role="region" aria-label={`${selectedNode.label} details`}>
+          <div className="sim__inspector-head">
+            <span className="sim__inspector-name">{selectedNode.label}</span>
+            <span className="sim__inspector-role">
+              {selectedNode.sub}
+              {selectedNode.address ? ` · ${selectedNode.address}` : ''}
+            </span>
+          </div>
+          <p className="sim__inspector-body">{selectedNode.detail ?? 'Component in the Layer 7 path.'}</p>
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => setSelected(null)}>
-            Close
+            Close details
           </button>
         </div>
       ) : null}
