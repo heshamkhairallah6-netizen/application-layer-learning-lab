@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import SimulationShell, { type SimStep } from '../components/sim/SimulationShell';
 import type { FlowNode } from '../components/sim/FlowCanvas';
-import { Badge, Callout, CodeBlock, PageHead, Panel, Tabs } from '../components/ui';
+import { Badge, Callout, CodeBlock, Disclosure, PageHead, Panel, Tabs } from '../components/ui';
 import PageNav from '../components/layout/PageNav';
 
 type Mode = 'smtp' | 'imap' | 'pop3';
@@ -639,6 +639,35 @@ export default function EmailLab() {
             </ul>
           </div>
         </Panel>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <Disclosure title="Going deeper: submission ports and mail authentication" meta="Advanced reference">
+          <div className="stack" style={{ gap: 14 }}>
+            <ul style={{ margin: 0 }}>
+              <li>
+                Port 25 is for server-to-server relay. Port 587 is the client submission port and upgrades to encryption with
+                STARTTLS. Port 465 runs SMTP inside TLS from the first byte.
+              </li>
+              <li>
+                IMAP uses 143, or 993 with TLS, and keeps mail on the server so several devices stay in sync. POP3 uses 110, or 995
+                with TLS, and typically downloads messages then removes them from the server.
+              </li>
+              <li>
+                SMTP pushes mail from sender to destination server. IMAP and POP3 pull mail from the mailbox, which is why sending and
+                reading use different protocols.
+              </li>
+              <li>
+                The SMTP envelope sender used during the transaction can differ from the From header the reader sees. Receiving servers
+                check the envelope for bounce routing.
+              </li>
+              <li>
+                SPF authorises sending IP addresses, DKIM signs the message cryptographically, and DMARC tells receivers what to do when
+                either check fails.
+              </li>
+            </ul>
+          </div>
+        </Disclosure>
       </div>
 
       <PageNav />

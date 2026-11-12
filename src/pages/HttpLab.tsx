@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import SimulationShell, { type SimStep } from '../components/sim/SimulationShell';
 import type { FlowNode } from '../components/sim/FlowCanvas';
-import { Badge, Callout, CodeBlock, PageHead, Panel, Tabs } from '../components/ui';
+import { Badge, Callout, CodeBlock, Disclosure, PageHead, Panel, Tabs } from '../components/ui';
 import PageNav from '../components/layout/PageNav';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -635,6 +635,39 @@ export default function HttpLab() {
             </Callout>
           </div>
         </Panel>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <Disclosure title="Going deeper: status families and method semantics" meta="Advanced reference">
+          <div className="stack" style={{ gap: 14 }}>
+            <p style={{ margin: 0 }}>
+              Status codes are grouped by their first digit: 1xx means the request is still being processed, 2xx means success,
+              3xx means the client must follow a redirect, 4xx means the request itself was wrong, and 5xx means the server failed
+              while handling an otherwise valid request.
+            </p>
+            <ul style={{ margin: 0 }}>
+              <li>
+                <span className="mono">GET</span>, <span className="mono">PUT</span> and <span className="mono">DELETE</span> are
+                idempotent: repeating the identical request leaves the server in the same state. <span className="mono">POST</span> is
+                not, which is why browsers warn before resubmitting a form.
+              </li>
+              <li>
+                <span className="mono">GET</span> and <span className="mono">HEAD</span> are also safe: they must not change server state.
+              </li>
+              <li>
+                HTTPS is ordinary HTTP carried inside a TLS session on port 443. The method, headers and body do not change; TLS adds
+                confidentiality, integrity and server authentication.
+              </li>
+              <li>
+                Request headers describe the client and what it accepts (<span className="mono">Host</span>,{' '}
+                <span className="mono">User-Agent</span>, <span className="mono">Accept</span>,{' '}
+                <span className="mono">Authorization</span>). Response headers describe the result (<span className="mono">Content-Type</span>,{' '}
+                <span className="mono">Content-Length</span>, <span className="mono">Cache-Control</span>,{' '}
+                <span className="mono">Set-Cookie</span>).
+              </li>
+            </ul>
+          </div>
+        </Disclosure>
       </div>
 
       <PageNav />

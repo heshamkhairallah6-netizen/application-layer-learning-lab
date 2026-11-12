@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import SimulationShell, { type SimStep } from '../components/sim/SimulationShell';
 import type { FlowNode } from '../components/sim/FlowCanvas';
-import { Badge, Callout, CodeBlock, PageHead, Panel } from '../components/ui';
+import { Badge, Callout, CodeBlock, Disclosure, PageHead, Panel } from '../components/ui';
 import PageNav from '../components/layout/PageNav';
 
 type DnsScenario = {
@@ -552,6 +552,36 @@ export default function DnsLab() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <Disclosure title="Going deeper: record types and transport behaviour" meta="Advanced reference">
+          <div className="stack" style={{ gap: 14 }}>
+            <ul style={{ margin: 0 }}>
+              <li>
+                <span className="mono">A</span> maps a name to an IPv4 address, <span className="mono">AAAA</span> to an IPv6 address,
+                and <span className="mono">CNAME</span> points one name at another name instead of an address.
+              </li>
+              <li>
+                <span className="mono">MX</span> lists the mail servers for a domain, <span className="mono">NS</span> names the
+                authoritative servers for the zone, and <span className="mono">TXT</span> carries verification and mail-policy records
+                such as SPF.
+              </li>
+              <li>
+                <span className="mono">SOA</span> holds the zone authority and timing defaults; <span className="mono">PTR</span> answers
+                reverse lookups, turning an IP address back into a name.
+              </li>
+              <li>
+                DNS uses port 53. Queries normally travel over UDP; the resolver switches to TCP when a response is too large for UDP
+                or for zone transfers.
+              </li>
+              <li>
+                Every record carries a TTL. Resolvers cache answers for that many seconds, which is why a corrected record can take a
+                while to appear everywhere. Negative answers are cached too.
+              </li>
+            </ul>
+          </div>
+        </Disclosure>
       </div>
 
       <PageNav />

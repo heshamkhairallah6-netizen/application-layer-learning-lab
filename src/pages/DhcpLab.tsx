@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import SimulationShell, { type SimStep } from '../components/sim/SimulationShell';
 import type { FlowNode } from '../components/sim/FlowCanvas';
-import { Badge, Callout, CodeBlock, PageHead, Panel, Tabs } from '../components/ui';
+import { Badge, Callout, CodeBlock, Disclosure, PageHead, Panel, Tabs } from '../components/ui';
 import PageNav from '../components/layout/PageNav';
 
 type Mode = 'dora' | 'renew' | 'nak';
@@ -538,6 +538,34 @@ export default function DhcpLab() {
             </span>
           </Callout>
         </Panel>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <Disclosure title="Going deeper: leases, timers and relay agents" meta="Advanced reference">
+          <div className="stack" style={{ gap: 14 }}>
+            <ul style={{ margin: 0 }}>
+              <li>
+                DHCP uses UDP: the server listens on port 67 and the client on port 68. Discover is sent to the broadcast address
+                255.255.255.255 because the client has no usable IP address yet.
+              </li>
+              <li>
+                Beyond DORA the protocol also defines DHCPRELEASE, DHCPDECLINE for a duplicate address, DHCPNAK for a refused request
+                and DHCPINFORM for clients that already have an address.
+              </li>
+              <li>
+                The lease has two renewal timers: T1 at 50% of the lease, when the client unicasts a renewal request to its original
+                server, and T2 at 87.5%, when it broadcasts to any available server.
+              </li>
+              <li>
+                Common options are option 1 subnet mask, option 3 default gateway, option 6 DNS servers, option 51 lease time and
+                option 54 the DHCP server identifier.
+              </li>
+              <li>
+                A DHCP relay agent forwards requests between subnets, because the original broadcast does not cross a router.
+              </li>
+            </ul>
+          </div>
+        </Disclosure>
       </div>
 
       <PageNav />
