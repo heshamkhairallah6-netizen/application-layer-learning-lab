@@ -204,7 +204,6 @@ export default function Overview() {
       <Panel
         title="Request path"
         sub="what actually happens when you open a URL"
-        style={undefined}
         footer={
           <span className="mono faint" style={{ fontSize: 10.5 }}>
             LAYER 7 OPERATES AT EVERY STAGE AFTER ADDRESS RESOLUTION

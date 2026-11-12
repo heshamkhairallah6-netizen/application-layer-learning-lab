@@ -531,7 +531,7 @@ export default function HttpLab() {
         </Panel>
       </div>
 
-      <Panel title="Raw exchange on the wire" sub={`${method} · ${scheme.toUpperCase()}`} style={undefined}>
+      <Panel title="Raw exchange on the wire" sub={`${method} · ${scheme.toUpperCase()}`}>
         <div className="grid grid--2" style={{ gap: 12 }}>
           <CodeBlock title="→ request" code={requestRaw(method, scheme)} />
           <CodeBlock title="← response" code={responseRaw(method, scheme)} />
