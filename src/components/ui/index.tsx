@@ -124,6 +124,31 @@ export function Callout({ tone = 'info', children }: { tone?: 'info' | 'teal' | 
   return <div className={cls}>{children}</div>;
 }
 
+export function Disclosure({
+  title,
+  meta,
+  children,
+  defaultOpen,
+}: {
+  title: ReactNode;
+  meta?: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details className="disclosure" open={defaultOpen}>
+      <summary className="disclosure__summary">
+        <span className="disclosure__chev" aria-hidden>
+          ▶
+        </span>
+        <span className="disclosure__title">{title}</span>
+        {meta ? <span className="disclosure__meta">{meta}</span> : null}
+      </summary>
+      <div className="disclosure__body">{children}</div>
+    </details>
+  );
+}
+
 export function Meter({ value, max, label }: { value: number; max: number; label?: string }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   return (

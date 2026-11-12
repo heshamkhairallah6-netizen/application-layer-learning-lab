@@ -461,6 +461,11 @@ li {
   max-height: 340px;
 }
 
+.sim__stage-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 /* ---------- page navigation footer ---------- */
 
 .page-nav-panel {
@@ -594,7 +599,12 @@ li {
   }
 
   .flow {
-    max-height: 240px;
+    min-width: 620px;
+    max-height: none;
+  }
+
+  .sim__stage-scroll {
+    padding-bottom: 6px;
   }
 
   .sim__inspector {
