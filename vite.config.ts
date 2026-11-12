@@ -11,7 +11,9 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     proxy: {
-      '/api': 'http://127.0.0.1:3000',
+      // Only real API paths are proxied. A bare '/api' prefix also matched the
+      // '/api-lab' page route and broke it in the dev server.
+      '^/api/': 'http://127.0.0.1:3000',
     },
   },
 });
