@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useEffect, useState, type ReactNode } from 'react';
 import FlowCanvas, { type FlowNode } from './FlowCanvas';
 import { Badge, KeyValue, type KVRow } from '../ui';
 import { NextIcon, PauseIcon, PlayIcon, PrevIcon, ReplayIcon } from '../ui/icons';
@@ -27,6 +26,8 @@ type Props = {
   controls?: ReactNode;
   resetKey?: string;
   extra?: ReactNode;
+  /** Label for the primary action, e.g. "Send request". Defaults to Play. */
+  playLabel?: string;
   caption?: string;
   stageFooter?: ReactNode;
 };
@@ -40,6 +41,8 @@ const STATUS_TONE: Record<NonNullable<SimStep['status']>, 'blue' | 'teal' | 'amb
   bad: 'red',
 };
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 export default function SimulationShell({
   simId,
   title,
@@ -49,15 +52,14 @@ export default function SimulationShell({
   controls,
   resetKey,
   extra,
+  playLabel,
   caption,
   stageFooter,
 }: Props) {
-  const reduce = useReducedMotion();
   const { completeSim } = useProgress();
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const timelineRef = useRef<HTMLDivElement>(null);
 
   const last = steps.length - 1;
   const safeIndex = Math.min(index, last);
@@ -75,18 +77,13 @@ export default function SimulationShell({
       setPlaying(false);
       return;
     }
-    const timer = window.setTimeout(() => setIndex((i) => Math.min(i + 1, last)), 2400 / speed);
+    const timer = window.setTimeout(() => setIndex((i) => Math.min(i + 1, last)), 2600 / speed);
     return () => window.clearTimeout(timer);
   }, [playing, index, last, speed]);
 
   useEffect(() => {
     if (safeIndex === last) completeSim(simId);
   }, [safeIndex, last, simId, completeSim]);
-
-  useEffect(() => {
-    const node = timelineRef.current?.querySelector('[data-active="true"]');
-    if (node instanceof HTMLElement) node.scrollIntoView({ block: 'nearest' });
-  }, [safeIndex]);
 
   const playPause = () => {
     if (finished) {
@@ -102,35 +99,30 @@ export default function SimulationShell({
     setPlaying(true);
   };
 
+  const idleLabel = playLabel ?? 'Play';
+
   return (
     <section className="sim" aria-label={`${title} simulation`}>
       <header className="sim__head">
-        <div style={{ minWidth: 0 }}>
-          <div className="sim__title">{title}</div>
-          <div className="sim__sub">{sub}</div>
+        <div className="sim__heading">
+          <h2 className="sim__title">{title}</h2>
+          <p className="sim__sub">{sub}</p>
         </div>
         {controls ? <div className="sim__controls">{controls}</div> : null}
       </header>
 
-      <div className="sim__progress" aria-hidden>
-        <div className="sim__progress-bar" style={{ width: `${((safeIndex + 1) / steps.length) * 100}%` }} />
-      </div>
-
       <div className="sim__stage">
         <div className="sim__caption">
           <span className="sim__caption-dot" aria-hidden />
-          <span>
-            Step {String(safeIndex + 1).padStart(2, '0')} of {String(steps.length).padStart(2, '0')}
+          <span className="mono">
+            STEP {pad(safeIndex + 1)} / {pad(steps.length)}
           </span>
-          <span aria-hidden>·</span>
-          <span>{caption ?? step?.phase}</span>
+          <span className="sim__caption-phase">{step?.phase}</span>
         </div>
-        <FlowCanvas
-          nodes={nodes}
-          activeNode={step?.node ?? 0}
-          packetLabel={step?.packetLabel}
-          speed={speed}
-        />
+
+        <FlowCanvas nodes={nodes} activeNode={step?.node ?? 0} packetLabel={step?.packetLabel} speed={speed} />
+
+        {caption ? <p className="sim__stage-note">{caption}</p> : null}
         {stageFooter}
       </div>
 
@@ -148,10 +140,17 @@ export default function SimulationShell({
         >
           <PrevIcon />
         </button>
-        <button type="button" className="btn btn--primary" onClick={playPause} aria-label={playing ? 'Pause simulation' : 'Play simulation'}>
+
+        <button
+          type="button"
+          className="btn btn--primary btn--play"
+          onClick={playPause}
+          aria-label={playing ? 'Pause simulation' : idleLabel}
+        >
           {playing ? <PauseIcon /> : <PlayIcon />}
-          {playing ? 'Pause' : finished ? 'Play again' : 'Play'}
+          {playing ? 'Pause' : finished ? `Replay` : idleLabel}
         </button>
+
         <button
           type="button"
           className="btn btn--icon"
@@ -165,9 +164,10 @@ export default function SimulationShell({
         >
           <NextIcon />
         </button>
+
         <button type="button" className="btn btn--ghost" onClick={replay} aria-label="Replay simulation from the first step">
           <ReplayIcon />
-          Replay
+          Restart
         </button>
 
         <div className="spacer" />
@@ -184,81 +184,47 @@ export default function SimulationShell({
         </label>
       </div>
 
-      <div className="sim__body">
-        <div className="sim__timeline" ref={timelineRef} role="list" aria-label="Communication timeline">
-          {steps.map((s, i) => (
+      <div className="sim__now" aria-live="polite">
+        <div className="sim__now-head">
+          <span className="sim__now-step mono">{pad(safeIndex + 1)}</span>
+          <span className="sim__now-title">{step?.title}</span>
+          {step?.status ? <Badge tone={STATUS_TONE[step.status]}>{step.phase}</Badge> : null}
+        </div>
+
+        <p className="sim__now-text">{step?.detail}</p>
+
+        {step?.raw ? <pre className="sim__wire">{step.raw}</pre> : null}
+
+        {step?.rows && step.rows.length > 0 ? (
+          <details className="sim__fields">
+            <summary>
+              {step.payloadTitle ?? 'Message fields'} <span className="faint">· {step.rows.length} fields</span>
+            </summary>
+            <KeyValue rows={step.rows} />
+          </details>
+        ) : null}
+      </div>
+
+      <ol className="sim__chips" aria-label="Message sequence">
+        {steps.map((s, i) => (
+          <li key={s.id}>
             <button
-              key={s.id}
               type="button"
-              role="listitem"
-              data-active={i === safeIndex}
-              className={`sim__step${i === safeIndex ? ' is-active' : ''}${i < safeIndex ? ' is-done' : ''}`}
+              className={`sim__chip${i === safeIndex ? ' is-active' : ''}${i < safeIndex ? ' is-done' : ''}`}
               onClick={() => {
                 setPlaying(false);
                 setIndex(i);
               }}
               aria-current={i === safeIndex}
+              aria-label={`Step ${i + 1}: ${s.title}`}
+              title={s.title}
             >
-              <span className="sim__step-index">{String(i + 1).padStart(2, '0')}</span>
-              <span>
-                <span className="sim__step-title">{s.title}</span>
-                <span className="sim__step-phase">{s.phase}</span>
-              </span>
+              <span className="sim__chip-num">{i + 1}</span>
+              <span className="sim__chip-label">{s.packetLabel ?? s.phase}</span>
             </button>
-          ))}
-        </div>
-
-        <div className="sim__detail" aria-live="polite">
-          <div className="sim__detail-head">
-            <span className="mono dim" style={{ fontSize: 12 }}>
-              {String(safeIndex + 1).padStart(2, '0')}
-            </span>
-            <span className="sim__detail-title">{step?.title}</span>
-            {step?.status ? <Badge tone={STATUS_TONE[step.status]}>{step.phase}</Badge> : <Badge>{step?.phase}</Badge>}
-          </div>
-          <p className="sim__explain">{step?.detail}</p>
-          {step?.rows && step.rows.length > 0 ? (
-            <div className="sim__payload">
-              <div className="sim__payload-head">
-                <span className="dot dot--live" />
-                {step.payloadTitle ?? 'Inspection'}
-              </div>
-              <KeyValue rows={step.rows} />
-            </div>
-          ) : null}
-          {step?.raw ? (
-            <div className="code-block">
-              <div className="code-block__head">RAW MESSAGE</div>
-              <pre>{step.raw}</pre>
-            </div>
-          ) : null}
-          <div className="sim__hint">
-            <span className="sim__hint-label">Tip</span>
-            <span>
-              Click any component in the diagram to see what it does in this exchange. Use the arrows to move one step at a time.
-            </span>
-          </div>
-          {!reduce && finished ? (
-            <div className="callout callout--ok">
-              <span>
-                <strong>Sequence complete.</strong> Every hop has been inspected — replay or step back to compare individual messages.
-              </span>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="sim__legend">
-        <span>
-          <span className="dot dot--ok" style={{ display: 'inline-block', marginRight: 8 }} />
-          completed
-        </span>
-        <span>
-          <span className="dot dot--live" style={{ display: 'inline-block', marginRight: 8 }} />
-          active hop
-        </span>
-        <span className="faint">click any component for its role</span>
-      </div>
+          </li>
+        ))}
+      </ol>
 
       {extra}
     </section>
