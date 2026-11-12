@@ -1154,3 +1154,11 @@ li {
   .ticket__symptom { font-size: 19px; }
   .quiz__score { font-size: 52px; }
 }
+.sim__wire-note {
+  margin: 18px 0 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}

@@ -65,6 +65,14 @@ export default function SimulationShell({
   const safeIndex = Math.min(index, last);
   const step = steps[safeIndex];
   const finished = safeIndex === last;
+  // Keep the most recent real message visible while stepping through internal hops,
+  // so the request line never disappears mid-lesson.
+  const wire = (() => {
+    for (let i = safeIndex; i >= 0; i -= 1) {
+      if (steps[i].raw) return steps[i];
+    }
+    return undefined;
+  })();
 
   useEffect(() => {
     setIndex(0);
@@ -193,7 +201,12 @@ export default function SimulationShell({
 
         <p className="sim__now-text">{step?.detail}</p>
 
-        {step?.raw ? <pre className="sim__wire">{step.raw}</pre> : null}
+        {wire ? (
+          <>
+            {wire.id !== step?.id ? <p className="sim__wire-note">Still on the wire</p> : null}
+            <pre className="sim__wire">{wire.raw}</pre>
+          </>
+        ) : null}
 
         {step?.rows && step.rows.length > 0 ? (
           <details className="sim__fields">
