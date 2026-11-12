@@ -1,0 +1,57 @@
+/* ---------- additions: command grid, option marks, level cards ---------- */
+
+.cmd-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.option__mark {
+  width: 16px;
+  flex: 0 0 16px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--teal);
+}
+
+.option__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.level-card {
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mt-lg {
+  margin-top: 16px;
+}
+
+@media (max-width: 860px) {
+  .cmd-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
