@@ -9,36 +9,43 @@ export default function PageNav() {
   const next = index >= 0 && index < ALL_NAV_ITEMS.length - 1 ? ALL_NAV_ITEMS[index + 1] : undefined;
 
   return (
-    <nav className="panel" aria-label="Page navigation" style={{ marginTop: 18 }}>
-      <div className="panel__body row" style={{ justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+    <nav className="panel page-nav-panel" aria-label="Page navigation">
+      <div className="panel__body row" style={{ justifyContent: 'space-between', gap: 16 }}>
         {prev ? (
-          <Link className="btn btn--ghost" to={prev.path} style={{ height: 'auto', padding: '7px 10px' }}>
-            <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
+          <Link className="page-nav-link" to={prev.path}>
+            <span style={{ display: 'inline-flex', transform: 'rotate(180deg)', color: 'var(--muted)' }}>
               <ArrowIcon />
             </span>
-            <span className="stack" style={{ gap: 1, alignItems: 'flex-start' }}>
+            <span className="page-nav-link__meta">
               <span className="eyebrow">Previous · {prev.index}</span>
-              <span>{prev.short}</span>
+              <span className="page-nav-link__title">{prev.short}</span>
             </span>
           </Link>
         ) : (
-          <span className="mono faint" style={{ fontSize: 10.5 }}>
+          <span className="mono faint" style={{ fontSize: 12 }}>
             START OF LABORATORY
           </span>
         )}
 
         {next ? (
-          <Link className="btn btn--ghost" to={next.path} style={{ height: 'auto', padding: '7px 10px', marginLeft: 'auto' }}>
-            <span className="stack" style={{ gap: 1, alignItems: 'flex-end' }}>
+          <Link className="page-nav-link page-nav-link--next" to={next.path} style={{ marginLeft: 'auto' }}>
+            <span className="page-nav-link__meta">
               <span className="eyebrow">Next · {next.index}</span>
-              <span>{next.short}</span>
+              <span className="page-nav-link__title">{next.short}</span>
             </span>
-            <ArrowIcon />
+            <span style={{ display: 'inline-flex', color: 'var(--muted)' }}>
+              <ArrowIcon />
+            </span>
           </Link>
         ) : (
-          <Link className="btn btn--ghost" to="/" style={{ marginLeft: 'auto' }}>
-            Back to overview
-            <ArrowIcon />
+          <Link className="page-nav-link page-nav-link--next" to="/" style={{ marginLeft: 'auto' }}>
+            <span className="page-nav-link__meta">
+              <span className="eyebrow">Finished</span>
+              <span className="page-nav-link__title">Back to overview</span>
+            </span>
+            <span style={{ display: 'inline-flex', color: 'var(--muted)' }}>
+              <ArrowIcon />
+            </span>
           </Link>
         )}
       </div>

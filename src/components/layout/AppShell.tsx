@@ -30,6 +30,9 @@ export default function AppShell() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main">
+        Skip to lesson content
+      </a>
       {menuOpen ? <button type="button" className="sidebar-scrim" aria-label="Close navigation" onClick={() => setMenuOpen(false)} /> : null}
 
       <aside className={`sidebar${menuOpen ? ' is-open' : ''}`} aria-label="Laboratory navigation">
@@ -41,6 +44,9 @@ export default function AppShell() {
             <strong>Layer 7 Lab</strong>
             <span>Application Layer</span>
           </span>
+          <button type="button" className="sidebar__close" aria-label="Close navigation" onClick={() => setMenuOpen(false)}>
+            ×
+          </button>
         </div>
 
         <nav className="sidebar__nav">
@@ -65,11 +71,11 @@ export default function AppShell() {
         <div className="sidebar__footer">
           <div className="row">
             <span className="dot dot--live live-dot" />
-            <span className="mono" style={{ fontSize: 10, letterSpacing: '0.08em' }}>
+            <span className="mono" style={{ fontSize: 11, letterSpacing: '0.08em' }}>
               LAB ENVIRONMENT ONLINE
             </span>
           </div>
-          <div className="mono" style={{ fontSize: 10 }}>
+          <div className="mono" style={{ fontSize: 11 }}>
             OSI Layer 7 · build 1.0
           </div>
         </div>
