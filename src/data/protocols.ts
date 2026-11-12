@@ -1,0 +1,461 @@
+export type ProtocolCategory =
+  | 'Web'
+  | 'Naming & addressing'
+  | 'Mail'
+  | 'Transfer & remote access'
+  | 'Operations'
+  | 'APIs & data';
+
+export type Protocol = {
+  id: string;
+  name: string;
+  full: string;
+  category: ProtocolCategory;
+  transport: string;
+  ports: string;
+  purpose: string;
+  why: string;
+  examples: string[];
+  process: string[];
+  troubleshooting: string[];
+  security: 'Encrypted' | 'Cleartext' | 'Deployment dependent' | 'Not applicable';
+  standard: string;
+  keywords: string[];
+};
+
+export const PROTOCOLS: Protocol[] = [
+  {
+    id: 'http',
+    name: 'HTTP',
+    full: 'Hypertext Transfer Protocol',
+    category: 'Web',
+    transport: 'TCP',
+    ports: '80 (cleartext)',
+    purpose:
+      'Transfers hypermedia documents and API payloads between a client and a server using a stateless request/response model.',
+    why: 'It is the shared language of the web: browsers, proxies, CDNs, caches and API clients all understand methods, headers and status codes.',
+    examples: [
+      'A browser requesting https://shop.example.com/catalog',
+      'A mobile app calling GET /v1/products on an API',
+      'A monitoring probe checking GET /health every 30 seconds',
+    ],
+    process: [
+      'Client opens a TCP connection to the server (port 80) and optionally upgrades to TLS for HTTPS.',
+      'Client sends a request line (method, target, version), headers, and an optional body.',
+      'The server locates a handler, applies routing/auth/caching rules and produces a status line, headers and body.',
+      'The connection is reused (HTTP/1.1 keep-alive) or closed; HTTP/2 and HTTP/3 multiplex many streams over one connection.',
+    ],
+    troubleshooting: [
+      '404 vs 500: 404 means the route/resource is missing; 500 means the handler failed after being reached.',
+      'Check redirect loops with curl -I and follow the Location header chain.',
+      'A request that hangs is usually a TCP/TLS problem (blocked port, expired certificate), not an HTTP problem.',
+      'Verify Content-Type and Content-Length; truncated bodies show up as client parse errors, not HTTP errors.',
+    ],
+    security: 'Cleartext',
+    standard: 'RFC 9110 (semantics), RFC 9111 (caching), RFC 9112 (HTTP/1.1)',
+    keywords: ['request', 'response', 'headers', 'status code', 'GET', 'POST', 'caching'],
+  },
+  {
+    id: 'https',
+    name: 'HTTPS',
+    full: 'HTTP over TLS',
+    category: 'Web',
+    transport: 'TCP',
+    ports: '443 (TLS)',
+    purpose: 'Carries HTTP inside a TLS session so requests, responses and credentials are encrypted and the server identity is verified.',
+    why: 'Without TLS, anyone on the path can read or modify traffic; browsers also require HTTPS for modern features and HTTP/2.',
+    examples: [
+      'Every modern public website (https://example.com)',
+      'API traffic to https://api.example.com',
+      'Internal dashboards using an internal certificate authority',
+    ],
+    process: [
+      'Client connects to TCP 443 and sends a TLS ClientHello with supported versions, cipher suites and SNI hostname.',
+      'Server replies with ServerHello, its certificate chain and key exchange material.',
+      'Client validates the chain against trusted CAs, checks hostname and validity dates, and both sides derive session keys.',
+      'Application data (the HTTP request and response) is encrypted; TLS 1.3 completes the handshake in one round trip.',
+    ],
+    troubleshooting: [
+      'Certificate expiry produces browser errors and curl "certificate has expired" — check with openssl s_client -connect host:443.',
+      'Hostname mismatch means the certificate SAN list does not include the requested name (including www vs apex).',
+      'TLS version/cipher mismatch appears when old clients meet modern servers; TLS 1.0/1.1 are deprecated.',
+      'A 502 at the load balancer often means the backend speaks plain HTTP while the balancer expects HTTPS, or vice versa.',
+    ],
+    security: 'Encrypted',
+    standard: 'RFC 8446 (TLS 1.3), RFC 9110 (HTTP semantics)',
+    keywords: ['tls', 'certificate', 'handshake', 'sni', 'encryption', '443'],
+  },
+  {
+    id: 'dns',
+    name: 'DNS',
+    full: 'Domain Name System',
+    category: 'Naming & addressing',
+    transport: 'UDP (TCP fallback)',
+    ports: '53 (UDP/TCP); DoT 853; DoH 443',
+    purpose: 'Maps human-readable names to addresses and publishes service metadata such as mail servers and verification tokens.',
+    why: 'People and applications use names, but routers forward packets using IP addresses. DNS is the distributed directory between the two.',
+    examples: [
+      'Resolving www.example.com to 203.0.113.10',
+      'Finding the MX host for a mail domain',
+      'SRV records locating a service inside a corporate zone',
+    ],
+    process: [
+      'The client stub resolver checks its local cache and hosts file, then queries a recursive resolver.',
+      'A cold cache walks the hierarchy: root servers → TLD servers → the authoritative name server for the zone.',
+      'The authoritative server returns the requested record (A, AAAA, CNAME, MX, TXT...) with a TTL.',
+      'The resolver caches the answer for the TTL and returns it; the client then connects to the address.',
+    ],
+    troubleshooting: [
+      'NXDOMAIN means the name does not exist in the zone; SERVFAIL usually means the resolver could not reach the authority or DNSSEC failed.',
+      'Compare dig @<resolver> with dig @<authoritative-ip> to separate resolver cache issues from zone data issues.',
+      'Check the hosts file first: a stale entry overrides DNS and is invisible to dig.',
+      'Truncated (TC=1) UDP answers must be retried over TCP; firewalls that block TCP 53 break large/DNSSEC responses.',
+    ],
+    security: 'Deployment dependent',
+    standard: 'RFC 1034/1035, RFC 6891 (EDNS0), RFC 8484 (DoH), RFC 7858 (DoT)',
+    keywords: ['a record', 'aaaa', 'cname', 'mx', 'ttl', 'resolver', 'nxdomain'],
+  },
+  {
+    id: 'dhcp',
+    name: 'DHCP',
+    full: 'Dynamic Host Configuration Protocol',
+    category: 'Naming & addressing',
+    transport: 'UDP',
+    ports: '67 (server), 68 (client); DHCPv6 546/547',
+    purpose: 'Automatically supplies IPv4 configuration: address, subnet mask, default gateway, DNS servers and lease duration.',
+    why: 'Manual addressing does not scale and causes conflicts. DHCP makes joining a network plug-and-play and centralises change control.',
+    examples: [
+      'A laptop receiving 192.168.20.42 when it joins office Wi-Fi',
+      'A VoIP phone getting option 66 to find its provisioning server',
+      'A lease being renewed halfway through its lifetime (T1)',
+    ],
+    process: [
+      'DHCPDISCOVER: client broadcasts from 0.0.0.0:68 to 255.255.255.255:67 with its MAC address and a transaction ID.',
+      'DHCPOFFER: server proposes an address (yiaddr), mask (option 1), router (3), DNS (6) and lease time (51).',
+      'DHCPREQUEST: client formally requests the offered address and identifies the chosen server (option 54).',
+      'DHCPACK: server commits the lease and confirms options; the client configures the interface and probes for conflicts.',
+    ],
+    troubleshooting: [
+      'A 169.254.x.x address (APIPA) means no DHCP reply was received — check VLAN, relay/helper address and scope exhaustion.',
+      'Confirm the scope still has free addresses and that leases are not unnecessarily long.',
+      'Rogue DHCP servers hand out wrong gateways/DNS; use DHCP snooping and compare the server identifier in the ACK.',
+      'If one VLAN fails while others work, the DHCP relay (option 82/helper) is usually missing on that gateway.',
+    ],
+    security: 'Cleartext',
+    standard: 'RFC 2131 (DHCPv4), RFC 8415 (DHCPv6)',
+    keywords: ['dora', 'lease', 'scope', 'yiaddr', 'option 53', 'apipa'],
+  },
+  {
+    id: 'ftp',
+    name: 'FTP',
+    full: 'File Transfer Protocol',
+    category: 'Transfer & remote access',
+    transport: 'TCP',
+    ports: '21 (control), 20 (active data)',
+    purpose: 'Transfers files between hosts using a separate control channel and data channel.',
+    why: 'Legacy systems and some vendor appliances still publish firmware or exports over FTP, so engineers must recognise and secure it.',
+    examples: [
+      'Downloading firmware from a legacy vendor archive',
+      'Nightly batch export from an old ERP system',
+      'Internal lab file drops on an isolated network',
+    ],
+    process: [
+      'Client opens a control connection to TCP 21 and authenticates with USER/PASS (cleartext).',
+      'Commands (LIST, RETR, STOR) travel on the control channel; each transfer opens a data connection.',
+      'Active mode: the server connects back to the client (PORT); passive mode: the client connects to a server-chosen port (PASV).',
+      'Transfers complete with a 226 reply; the control connection stays open until QUIT.',
+    ],
+    troubleshooting: [
+      'Passive mode is usually required behind NAT/firewalls; a hanging LIST often means blocked passive data ports.',
+      'Credentials travel in cleartext — never use FTP across untrusted networks.',
+      'Check whether the server requires FTPS (explicit AUTH TLS) versus plain FTP.',
+      'Compare directory listings: ASCII vs binary mode corrupts binary files if mismatched.',
+    ],
+    security: 'Cleartext',
+    standard: 'RFC 959',
+    keywords: ['port 21', 'passive', 'active', 'ftps', 'cleartext'],
+  },
+  {
+    id: 'sftp',
+    name: 'SFTP',
+    full: 'SSH File Transfer Protocol',
+    category: 'Transfer & remote access',
+    transport: 'Over SSH (TCP 22)',
+    ports: '22',
+    purpose: 'Transfers and manages files through an encrypted SSH session, including rename, permissions and resume operations.',
+    why: 'It replaces cleartext FTP with authenticated, encrypted transport and usually needs no extra firewall port.',
+    examples: [
+      'Uploading a nightly backup with sftp or scp',
+      'CI pipeline copying build artefacts to a jump host',
+      'Vendor exchanging statements over an SSH key pair',
+    ],
+    process: [
+      'Client connects to TCP 22 and completes the SSH transport handshake and host-key verification.',
+      'User authenticates (public key preferred, password or certificate).',
+      'The sftp subsystem is opened as an SSH channel and the client sends file operations (open, read, write, stat).',
+      'All traffic is encrypted and integrity protected inside the SSH session.',
+    ],
+    troubleshooting: [
+      'Permission denied (publickey) usually means the wrong key, wrong user, or strict permissions on ~/.ssh.',
+      'Verify the server host key fingerprint before accepting a changed key.',
+      'Check that the account is allowed to use the sftp subsystem in sshd_config (Subsystem sftp, ForceCommand).',
+      'Disk quota and inode exhaustion surface as write failures after authentication succeeds.',
+    ],
+    security: 'Encrypted',
+    standard: 'draft-ietf-secsh-filexfer (SFTP v3), RFC 4254 (SSH channels)',
+    keywords: ['ssh', 'port 22', 'encrypted', 'scp', 'keys'],
+  },
+  {
+    id: 'smtp',
+    name: 'SMTP',
+    full: 'Simple Mail Transfer Protocol',
+    category: 'Mail',
+    transport: 'TCP',
+    ports: '25 (relay), 587 (submission), 465 (implicit TLS)',
+    purpose: 'Submits and relays email messages between mail servers using a command/reply conversation.',
+    why: 'It is the store-and-forward backbone of email; every provider still speaks SMTP between domains.',
+    examples: [
+      'Outlook submitting a message to smtp.example.com:587',
+      'A company mail gateway relaying to the recipient MX on port 25',
+      'Application alerts sent through an authenticated relay',
+    ],
+    process: [
+      'Client connects, reads the 220 greeting, then sends EHLO to discover extensions (STARTTLS, AUTH, SIZE).',
+      'STARTTLS upgrades the session, then AUTH authenticates the sender (submission port).',
+      'MAIL FROM and RCPT TO declare the envelope; DATA carries headers plus body and ends with a lone "." line.',
+      'The server queues the message (250 OK + queue id) and relays it to the recipient domain MX.',
+    ],
+    troubleshooting: [
+      '550 5.7.1 is usually a policy rejection (SPF/DKIM/DMARC, blocklist) rather than a broken connection.',
+      'Many ISPs block outbound port 25; use the provider relay on 587 with authentication.',
+      'Check the SMTP transcript: greeting, EHLO extensions, and the exact enhanced status code identify the failing stage.',
+      'Large attachments may exceed SIZE limits; TLS failures appear right after STARTTLS.',
+    ],
+    security: 'Deployment dependent',
+    standard: 'RFC 5321 (SMTP), RFC 6409 (submission), RFC 8314 (implicit TLS)',
+    keywords: ['mail', 'relay', 'starttls', '587', '550', 'spf'],
+  },
+  {
+    id: 'pop3',
+    name: 'POP3',
+    full: 'Post Office Protocol v3',
+    category: 'Mail',
+    transport: 'TCP',
+    ports: '110 (cleartext), 995 (POP3S)',
+    purpose: 'Downloads messages from a mailbox to a single client, typically removing them from the server afterwards.',
+    why: 'It is simple and works offline, but it is a single-device model that does not synchronise folders or read state.',
+    examples: [
+      'A legacy desktop client configured to download and delete mail',
+      'A script polling a mailbox for automated reports',
+      'An appliance that only supports POP3 collection',
+    ],
+    process: [
+      'Client connects to TCP 110 (or 995 with TLS) and authenticates with USER/PASS or APOP.',
+      'STAT and LIST report message counts and sizes; RETR downloads a message; DELE marks it for removal.',
+      'QUIT ends the session and commits deletions.',
+      'Messages live only on the client after download unless "leave a copy on server" is enabled.',
+    ],
+    troubleshooting: [
+      'Mail "disappearing" on other devices is expected with download-and-delete.',
+      'UIDL support matters for duplicate prevention when multiple clients poll the same mailbox.',
+      'Port 110 sends credentials in cleartext — use 995 or an internal network.',
+      'Large mailboxes are slow because POP3 has no partial/folder synchronisation model.',
+    ],
+    security: 'Deployment dependent',
+    standard: 'RFC 1939, RFC 8314 (TLS)',
+    keywords: ['download', '995', 'uidl', 'single device'],
+  },
+  {
+    id: 'imap',
+    name: 'IMAP',
+    full: 'Internet Message Access Protocol v4',
+    category: 'Mail',
+    transport: 'TCP',
+    ports: '143 (STARTTLS), 993 (implicit TLS)',
+    purpose: 'Keeps a mailbox synchronised on the server so multiple devices see the same folders, flags and read state.',
+    why: 'Modern users read mail on phone, laptop and web simultaneously; IMAP is the protocol that makes that consistent.',
+    examples: [
+      'Phone and laptop showing the same unread count',
+      'Server-side search across a large archive folder',
+      'Drafts syncing between a desktop client and webmail',
+    ],
+    process: [
+      'Client connects to 143 or 993 and authenticates (often with OAuth2 for major providers).',
+      'SELECT opens a mailbox and reports counts; FETCH retrieves headers, bodies or flags; IDLE pushes new-mail notifications.',
+      'STORE updates flags such as \\Seen and \\Flagged; APPEND uploads sent or draft messages.',
+      'Messages remain on the server until explicitly expunged.',
+    ],
+    troubleshooting: [
+      'Folder count mismatches point to client sync filters or a second account/alias.',
+      'Repeated authentication prompts usually mean expired OAuth tokens or app passwords after a policy change.',
+      'Check server-side storage quotas: IMAP failures often start with "mailbox full".',
+      'IMAP over 143 without STARTTLS exposes credentials; enforce 993.',
+    ],
+    security: 'Deployment dependent',
+    standard: 'RFC 9051 (IMAP4rev2), RFC 3501 (IMAP4rev1)',
+    keywords: ['sync', '993', 'folders', 'idle', 'flags'],
+  },
+  {
+    id: 'ssh',
+    name: 'SSH',
+    full: 'Secure Shell',
+    category: 'Transfer & remote access',
+    transport: 'TCP',
+    ports: '22',
+    purpose: 'Provides an encrypted, authenticated channel for remote shells, command execution, tunnelling and file transfer.',
+    why: 'It replaces telnet/rlogin with strong cryptography and is the standard administrative path to Linux and network devices.',
+    examples: [
+      'ssh deploy@server.example.com to administer a host',
+      'An SSH tunnel forwarding a database port through a bastion',
+      'Automation using an ed25519 key pair instead of a password',
+    ],
+    process: [
+      'TCP connection on 22, then protocol version exchange and algorithm negotiation.',
+      'Key exchange (Curve25519/ECDH) establishes shared secrets; the server proves identity with its host key.',
+      'The client authenticates with a public key signature, certificate, password or keyboard-interactive.',
+      'Channels carry the shell, exec commands, port forwards or the sftp subsystem, all encrypted.',
+    ],
+    troubleshooting: [
+      'Permission denied (publickey): check the offered key (ssh -vvv), authorized_keys content, and file/directory permissions.',
+      'Host key verification failed: the server key changed (rebuild) or traffic is being intercepted — verify the fingerprint out of band.',
+      'Connection timed out means the port is filtered or the host is down, not an authentication problem.',
+      'StrictModes rejects keys when the home directory is group/world-writable.',
+    ],
+    security: 'Encrypted',
+    standard: 'RFC 4251-4254 (SSH-2), RFC 8332 (ed25519)',
+    keywords: ['22', 'keys', 'tunnel', 'host key', 'publickey'],
+  },
+  {
+    id: 'snmp',
+    name: 'SNMP',
+    full: 'Simple Network Management Protocol',
+    category: 'Operations',
+    transport: 'UDP',
+    ports: '161 (agent), 162 (traps/informs)',
+    purpose: 'Reads and writes structured device metrics from a Management Information Base (MIB) and delivers unsolicited alerts.',
+    why: 'It is the common monitoring interface for switches, routers, UPSes and printers that do not expose an API.',
+    examples: [
+      'Polling ifInOctets/ifOutOctets for interface graphs',
+      'A switch sending a linkDown trap to the monitoring platform',
+      'Reading sysUpTime and CPU utilisation every 5 minutes',
+    ],
+    process: [
+      'Manager sends GET/GETNEXT/GETBULK (or SET) to the agent on UDP 161 with a community string or SNMPv3 credentials.',
+      'The agent resolves the OID against its MIB and returns values or an error (noSuchObject, timeout).',
+      'Traps or informs are pushed to the manager on UDP 162 when an event occurs.',
+      'SNMPv3 adds user-based authentication (authNoPriv) and encryption (authPriv).',
+    ],
+    troubleshooting: [
+      'SNMP timeouts are usually ACLs, wrong community strings or the agent bound to another interface.',
+      'A trap received but no polling data suggests the manager can listen on 162 while outbound 161 is blocked.',
+      'OID not supported returns noSuchObject — verify the MIB and device model.',
+      'v2c communities are cleartext; prefer v3 authPriv on untrusted segments.',
+    ],
+    security: 'Deployment dependent',
+    standard: 'RFC 3411-3418 (SNMPv3), RFC 1157 (SNMPv1)',
+    keywords: ['oid', 'mib', 'trap', '161', '162', 'v3'],
+  },
+  {
+    id: 'ntp',
+    name: 'NTP',
+    full: 'Network Time Protocol',
+    category: 'Operations',
+    transport: 'UDP',
+    ports: '123 (NTS 4460)',
+    purpose: 'Synchronises system clocks to a reference time source with millisecond accuracy across a network.',
+    why: 'TLS, Kerberos, logs, distributed databases and billing all break or become unverifiable when clocks drift.',
+    examples: [
+      'A server syncing to pool.ntp.org every 64 seconds',
+      'Domain controllers providing time to Windows clients',
+      'chrony correcting drift after a VM snapshot restore',
+    ],
+    process: [
+      'Client sends an NTP request stamped with its transmit timestamp to a server on UDP 123.',
+      'Server returns its receive/transmit timestamps plus a reference timestamp.',
+      'Client computes round-trip delay and clock offset, then slews or steps the local clock.',
+      'Servers are ranked by stratum (1 = directly attached reference clock); lower strata are preferred.',
+    ],
+    troubleshooting: [
+      'Check with chronyc tracking / ntpq -p: look at stratum, offset and reachability.',
+      'UDP 123 blocked outbound leaves clocks drifting silently — compare with timedatectl.',
+      'A large offset may require a step (makestep) rather than slewing.',
+      'Virtual machines can lose time on suspend/resume; enable host time sync where appropriate.',
+    ],
+    security: 'Cleartext',
+    standard: 'RFC 5905 (NTPv4), RFC 8915 (NTS)',
+    keywords: ['stratum', 'offset', 'chrony', '123', 'drift'],
+  },
+  {
+    id: 'rest',
+    name: 'REST',
+    full: 'Representational State Transfer',
+    category: 'APIs & data',
+    transport: 'TCP (over HTTP/HTTPS)',
+    ports: '80 / 443 (via HTTP)',
+    purpose: 'An architectural style for APIs: stateless requests over HTTP where resources are addressed by URLs and represented as JSON or XML.',
+    why: 'Uniform resource addressing, cacheability and statelessness make REST APIs easy to scale, test and consume from any client.',
+    examples: [
+      'GET /v1/orders/1042 returning a JSON order',
+      'POST /v1/orders creating a resource and returning 201 + Location',
+      'DELETE /v1/orders/1042 returning 204',
+    ],
+    process: [
+      'Client sends an HTTP request to a resource URL with a method, headers (Accept, Authorization, Content-Type) and optional body.',
+      'A gateway authenticates, rate-limits and routes the request to a service handler.',
+      'The service validates input, reads/writes state and serialises a representation with an appropriate status code.',
+      'Client follows links, caches GET responses per headers, and retries only idempotent operations safely.',
+    ],
+    troubleshooting: [
+      '401 vs 403: unauthenticated vs authenticated-but-not-allowed.',
+      '400/422 means the payload is invalid; 409 means a state conflict; 429 means rate limited (read Retry-After).',
+      'Check Content-Type: a JSON body sent as text/plain is often rejected by strict frameworks.',
+      'Use idempotency keys for POST retries; PUT and DELETE should be idempotent by design.',
+    ],
+    security: 'Deployment dependent',
+    standard: 'Fielding dissertation (2000), RFC 9110',
+    keywords: ['api', 'stateless', 'json', 'idempotent', 'status codes'],
+  },
+  {
+    id: 'json',
+    name: 'JSON',
+    full: 'JavaScript Object Notation',
+    category: 'APIs & data',
+    transport: 'Format (carried by HTTP, TLS, etc.)',
+    ports: 'Not applicable',
+    purpose: 'A compact text format for structured data with objects, arrays, strings, numbers, booleans and null.',
+    why: 'It is human-readable, language-neutral and the default representation for web APIs and configuration.',
+    examples: [
+      'An API response: {"id":1042,"status":"shipped"}',
+      'A webhook payload containing an event and nested objects',
+      'A configuration file read at application startup',
+    ],
+    process: [
+      'Producer serialises a data structure to UTF-8 text and declares Content-Type: application/json.',
+      'Transport (usually HTTP over TLS) delivers the bytes with integrity and (optionally) caching metadata.',
+      'Consumer parses the text, validates against a schema, and handles absent/extra fields defensively.',
+      'Errors are communicated with a status code plus a machine-readable error object, not just prose.',
+    ],
+    troubleshooting: [
+      'Trailing commas and single quotes are invalid JSON — validate before blaming the server.',
+      'A 200 response with an HTML body usually means a proxy/login page intercepted the request.',
+      'Large numbers lose precision in JavaScript beyond 2^53; use strings for 64-bit identifiers.',
+      'Deeply nested or unbounded arrays need size limits to avoid parser memory issues.',
+    ],
+    security: 'Not applicable',
+    standard: 'RFC 8259, RFC 6901 (JSON Pointer), RFC 6902 (JSON Patch)',
+    keywords: ['payload', 'serialization', 'content-type', 'schema', 'parse'],
+  },
+];
+
+export const PROTOCOL_CATEGORIES: ProtocolCategory[] = [
+  'Web',
+  'Naming & addressing',
+  'Mail',
+  'Transfer & remote access',
+  'Operations',
+  'APIs & data',
+];
+
+export function protocolById(id: string): Protocol | undefined {
+  return PROTOCOLS.find((p) => p.id === id);
+}
