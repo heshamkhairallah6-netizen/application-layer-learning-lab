@@ -827,3 +827,129 @@ li {
   .lesson-head { margin-bottom: 26px; }
   .learn-more { margin-top: 36px; }
 }
+
+/* ---------- OSI stack lab ---------- */
+.stack-lab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 28px;
+  align-items: start;
+}
+.stack-lab__list { display: flex; flex-direction: column; gap: 8px; }
+.stack-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 16.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+.stack-row:hover { border-color: var(--border-strong); background: var(--panel-2); }
+.stack-row.is-active {
+  border-color: var(--blue-bright);
+  background: linear-gradient(90deg, var(--blue-soft), transparent 80%);
+  transform: translateX(3px);
+}
+.stack-row.is-l7.is-active { border-color: var(--teal-bright); background: linear-gradient(90deg, var(--teal-soft), transparent 80%); }
+.stack-row__num { font-family: var(--mono); font-size: 13px; color: var(--faint); min-width: 26px; }
+.stack-row__name { font-weight: 560; }
+.stack-row__tag {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  border: 1px solid rgba(67, 143, 137, 0.45);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+.stack-lab__detail { position: sticky; top: 92px; padding: 28px; }
+.stack-lab__eyebrow {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+}
+.stack-lab__job { margin: 16px 0 0; font-size: 21px; line-height: 1.45; color: var(--text); }
+.stack-lab__meta {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15.5px;
+}
+.stack-lab__hint { margin: 20px 0 0; font-size: 15.5px; line-height: 1.6; color: var(--muted); }
+.stack-lab__link {
+  margin-top: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: var(--teal-bright);
+  text-decoration: none;
+  font-weight: 550;
+}
+.stack-lab__link:hover { text-decoration: underline; }
+
+/* ---------- protocol explorer ---------- */
+.proto-list { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.proto { border: 1px solid var(--border); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.proto.is-open { border-color: var(--blue-bright); background: var(--panel-2); }
+.proto__head {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 22px;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font-size: 16.5px;
+}
+.proto__head:hover { background: rgba(255, 255, 255, 0.02); }
+.proto__name { font-weight: 640; font-size: 18px; letter-spacing: -0.01em; }
+.proto__full { color: var(--muted); font-size: 15.5px; }
+.proto__port { color: var(--teal-bright); font-size: 14px; }
+.proto__chev { font-family: var(--mono); color: var(--blue-bright); font-size: 18px; text-align: right; }
+.proto__body { padding: 0 22px 24px; border-top: 1px solid var(--border-soft); }
+.proto__purpose { margin: 20px 0 0; font-size: 18px; line-height: 1.55; color: var(--text); max-width: 720px; }
+.proto__facts { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 20px; font-size: 15.5px; }
+.proto__facts > div { display: flex; flex-direction: column; gap: 4px; }
+.proto__example { margin: 18px 0 0; font-size: 15.5px; color: var(--muted); line-height: 1.6; }
+.proto__example .faint { margin-right: 8px; }
+.proto__lab {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 550;
+  color: var(--teal-bright);
+  text-decoration: none;
+}
+.proto__lab:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .stack-lab { grid-template-columns: 1fr; gap: 20px; }
+  .stack-lab__detail { position: static; padding: 22px; }
+  .stack-lab__job { font-size: 19px; }
+  .proto__head { grid-template-columns: 1fr auto 20px; gap: 10px 12px; padding: 16px 18px; }
+  .proto__full { grid-column: 1 / -1; font-size: 14.5px; }
+  .proto__body { padding: 0 18px 20px; }
+  .proto__purpose { font-size: 17px; }
+  .proto__facts { gap: 18px; }
+}
