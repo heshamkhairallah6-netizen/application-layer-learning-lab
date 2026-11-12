@@ -27,6 +27,9 @@ export default function App() {
         <Route path="troubleshooting" element={<Troubleshooting />} />
         <Route path="knowledge-check" element={<KnowledgeCheck />} />
         <Route path="summary" element={<Summary />} />
+        {/* Short aliases: the paths people type from memory or a bookmark. */}
+        <Route path="quiz" element={<Navigate to="/knowledge-check" replace />} />
+        <Route path="api" element={<Navigate to="/api-lab" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
