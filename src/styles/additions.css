@@ -688,3 +688,142 @@ li {
     animation: none;
   }
 }
+
+/* ============================================================
+   SIMPLIFIED LAB PASS — one idea per page, big stage, little text
+   ============================================================ */
+.lesson-head { max-width: 780px; margin: 0 0 34px; }
+.lesson-head__eyebrow {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+}
+.lesson-head__title {
+  margin: 14px 0 0;
+  font-size: clamp(30px, 3.6vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  font-weight: 650;
+  color: var(--text);
+}
+.lesson-head__sentence {
+  margin: 16px 0 0;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 640px;
+}
+.lesson-head__aside { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* stage-forward simulation */
+.sim { padding: 26px 26px 22px; }
+.sim__head { align-items: flex-start; gap: 18px; }
+.sim__title { font-size: 22px; font-weight: 640; letter-spacing: -0.01em; }
+.sim__sub { margin-top: 6px; font-size: 15px; color: var(--muted); }
+.sim__stage { padding: 20px 14px 10px; }
+.sim__caption { font-size: 13px; }
+.sim__caption-phase { color: var(--blue-bright); letter-spacing: 0.08em; }
+.sim__stage-note { margin: 10px 6px 0; font-size: 14.5px; color: var(--dim); }
+
+.sim__now {
+  margin-top: 20px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-soft);
+}
+.sim__now-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sim__now-step { font-size: 13px; color: var(--faint); }
+.sim__now-title { font-size: 20px; font-weight: 640; letter-spacing: -0.01em; }
+.sim__now-text {
+  margin: 14px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text);
+  max-width: 800px;
+}
+.sim__wire {
+  margin: 18px 0 0;
+  padding: 18px 20px;
+  background: #121821;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: #dbe6ef;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+}
+.sim__fields { margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 14px; }
+.sim__fields > summary {
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--muted);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sim__fields > summary::before { content: '+'; font-family: var(--mono); color: var(--blue-bright); }
+.sim__fields[open] > summary::before { content: '−'; }
+.sim__fields[open] > summary { margin-bottom: 14px; color: var(--text); }
+
+/* compact sequence chips */
+.sim__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+}
+.sim__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+.sim__chip:hover { border-color: var(--border-strong); color: var(--text); }
+.sim__chip.is-done { color: var(--teal-bright); border-color: rgba(67, 143, 137, 0.5); }
+.sim__chip.is-active { background: var(--blue-soft); border-color: var(--blue-bright); color: #ffffff; }
+.sim__chip-num { font-family: var(--mono); font-size: 11.5px; opacity: 0.72; }
+.sim__chip-label { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.03em; }
+
+.btn--play { height: 48px; min-width: 200px; font-size: 16.5px; font-weight: 600; }
+.sim__toolbar { margin-top: 22px; }
+
+/* learn-more stack */
+.learn-more { margin-top: 48px; }
+.learn-more__title {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+.learn-more .disclosure { margin-bottom: 10px; }
+.learn-more .disclosure__summary { padding: 18px 20px; font-size: 16.5px; }
+.learn-more .disclosure__body { font-size: 16px; line-height: 1.65; padding: 0 20px 20px; }
+.disclosure__note { margin: 14px 0 0; font-size: 15.5px; color: var(--muted); line-height: 1.6; }
+
+@media (max-width: 760px) {
+  .sim { padding: 18px 15px 16px; }
+  .sim__stage { padding: 14px 4px 6px; }
+  .sim__now-text { font-size: 17px; }
+  .sim__wire { font-size: 13px; padding: 14px; }
+  .btn--play { min-width: 0; flex: 1 1 150px; }
+  .lesson-head__sentence { font-size: 17.5px; }
+  .lesson-head { margin-bottom: 26px; }
+  .learn-more { margin-top: 36px; }
+}

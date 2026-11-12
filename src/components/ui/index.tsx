@@ -47,6 +47,27 @@ export function PageHead({ eyebrow, title, lede, actions }: PageHeadProps) {
   );
 }
 
+export function LessonHead({
+  eyebrow,
+  title,
+  sentence,
+  aside,
+}: {
+  eyebrow: string;
+  title: string;
+  sentence: string;
+  aside?: ReactNode;
+}) {
+  return (
+    <header className="lesson-head">
+      <div className="lesson-head__eyebrow">{eyebrow}</div>
+      <h1 className="lesson-head__title">{title}</h1>
+      <p className="lesson-head__sentence">{sentence}</p>
+      {aside ? <div className="lesson-head__aside">{aside}</div> : null}
+    </header>
+  );
+}
+
 export function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: ReactNode }) {
   return (
     <div className="stat">
