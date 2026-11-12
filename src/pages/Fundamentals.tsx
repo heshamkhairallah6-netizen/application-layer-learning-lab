@@ -384,7 +384,7 @@ export default function Fundamentals() {
         </Panel>
       </div>
 
-      <Panel title="Terminology you will need" sub="used throughout the laboratories" style={undefined}>
+      <Panel title="Terminology you will need" sub="used throughout the laboratories">
         <div className="grid grid--2" style={{ gap: 10 }}>
           {VOCAB.map(([term, meaning]) => (
             <div className="kv" key={term} style={{ border: '1px solid var(--border-soft)', borderRadius: 4, padding: '8px 10px' }}>
